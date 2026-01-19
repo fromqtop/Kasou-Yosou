@@ -1,12 +1,10 @@
 import models
 import schemas
-from database import engine, get_db
+from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-# アプリ起動時にテーブル作成
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -23,5 +21,32 @@ def create_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
         # Unique制約違反（名前の重複）が起きた場合の処理
         db.rollback()
         raise HTTPException(status_code=409, detail="この名前は既に登録されています")
+    except Exception as e:
+        db.rollback()
+        print(f"予期せぬエラー: {e}")
+        raise HTTPException(status_code=500, detail="予期せぬエラーが発生しました")
 
     return new_user
+
+
+@app.delete("/users", response_model=schemas.UserDeleteResponse)
+def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
+    stmt = select(models.User).where(models.User.uid == user_in.uid)
+    user = db.scalar(stmt)
+
+    # ユーザー未存在エラー
+    if not user or user.status == "deleted":
+        raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+    # userデータ更新（退会）
+    try:
+        user.name = f"del_{user.uid.hex}"
+        user.status = "deleted"
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        print(f"予期せぬエラー: {e}")
+        raise HTTPException(status_code=500, detail="予期せぬエラーが発生しました")
+
+    return user

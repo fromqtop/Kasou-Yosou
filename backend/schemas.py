@@ -12,3 +12,11 @@ class UserResponse(BaseModel):
     name: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserDelete(BaseModel):
+    uid: UUID
+
+
+class UserDeleteResponse(BaseModel):
+    uid: UUID
