@@ -3,3 +3,5 @@ fastapi
 uvicorn
 sqlalchemy
 requests
+python-dotenv
+alembic
