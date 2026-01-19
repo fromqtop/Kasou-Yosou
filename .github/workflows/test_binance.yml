@@ -1,12 +1,13 @@
-name: Binance API Test
+name: Price API Test
 
 on:
-  workflow_dispatch: # ボタンを押して手動で実行できるようにする
+  workflow_dispatch:
 
 jobs:
   test_api:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch BTC Price from Binance
+      - name: Fetch BTC Price from CryptoWatch
         run: |
-          curl -s "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+          # BinanceのBTC/USDT価格をCryptoWatch経由で取得
+          curl -s "https://api.cryptowat.ch/markets/binance/btcusdt/price"
