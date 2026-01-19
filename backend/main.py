@@ -1,5 +1,4 @@
 import models
-import requests
 import schemas
 from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
@@ -8,26 +7,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 app = FastAPI()
-
-
-@app.get("/test-bybit")
-def test_bybit():
-    # Bybit V5 API: 1時間足(60分)を1件だけ取得
-    # category=linear(USDT無期限), symbol=BTCUSDT, interval=60
-    url = "https://api.bybit.com/v5/market/kline?category=linear&symbol=BTCUSDT&interval=60&limit=1"
-
-    try:
-        response = requests.get(url, timeout=10)
-        data = response.json()
-
-        # 成功すると data['result']['list'] にデータが入ります
-        return {
-            "status_code": response.status_code,
-            "data": data,
-            "message": "Bybit APIへの接続テスト（1h足）",
-        }
-    except Exception as e:
-        return {"error": str(e), "message": "接続失敗"}
 
 
 @app.post("/users", response_model=schemas.UserResponse)

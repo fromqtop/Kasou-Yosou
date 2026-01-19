@@ -1,0 +1,21 @@
+name: Bybit 24h Data Test
+
+on:
+  workflow_dispatch: # 手動実行用
+
+jobs:
+  test_bybit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch 24 hours of 1h Kline from Bybit
+        run: |
+          # limit=24 で直近24件、interval=60 で1時間足を取得
+          RESPONSE=$(curl -s "https://api.bybit.com/v5/market/kline?category=linear&symbol=BTCUSDT&interval=60&limit=24")
+          
+          # 結果を表示
+          echo "Full Response:"
+          echo $RESPONSE
+          
+          # JSONが正しくパースできるか、データ件数が24件あるか確認
+          echo "Checking data count..."
+          echo $RESPONSE | jq '.result.list | length'
