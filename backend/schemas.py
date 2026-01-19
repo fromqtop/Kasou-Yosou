@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -20,3 +21,11 @@ class UserDelete(BaseModel):
 
 class UserDeleteResponse(BaseModel):
     uid: UUID
+
+
+class GameRoundCreate(BaseModel):
+    id: int
+    start_at: datetime
+    closed_at: datetime
+    target_at: datetime
+    base_price: float

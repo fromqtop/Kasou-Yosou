@@ -40,7 +40,7 @@ class GameRound(Base):
     start_at: Mapped[datetime] = mapped_column(unique=True, index=True)
     closed_at: Mapped[datetime] = mapped_column()
     target_at: Mapped[datetime] = mapped_column()
-    base_price: Mapped[float | None] = mapped_column(Float)
+    base_price: Mapped[float] = mapped_column(Float)
     result_price: Mapped[float | None] = mapped_column(Float)
     winning_choice: Mapped[int | None] = mapped_column(Integer)
 

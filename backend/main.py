@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-import ccxt.async_support as ccxt
-import httpx
+import ccxt
 import models
 import schemas
 from database import get_db
@@ -56,64 +55,50 @@ def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
     return user
 
 
-@app.post("/game_round")
-async def create_game_round(
-    db: Session = Depends(get_db),
-):
-    # create
-    # 例 10:01に実行された場合、11:00-13:00 > 10時価格をもとに14時価格をあてるゲームを作成
+@app.post("/game_round", response_model=schemas.GameRoundCreate)
+def create_game_round(db: Session = Depends(get_db)):
+    # ラウンドの開始時刻
     start_at = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
 
-    # ラウンド既登録チェック
+    # ラウンド存在チェック
     stmt = select(models.GameRound).where(models.GameRound.start_at == start_at)
     if db.scalar(stmt):
         raise HTTPException(
-            status_code=409, detail="このゲームラウンドは既に登録されています"
+            status_code=409, detail="このゲームラウンドは既に存在します"
         )
 
-    # ラウンド作成
-    # 価格取得
-    exchange = ccxt.hyperliquid()
+    # binanceの価格を取得
+    exchange = ccxt.binance({"enableRateLimit": True})
+
     try:
-        symbol = "BTC/USDC:USDC"
+        symbol = "BTC/USDT"
         timeframe = "1h"
         since = int(start_at.timestamp() * 1000)
-        limit = 24
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
 
-        ohlcv = await exchange.fetch_ohlcv(symbol, timeframe, since, limit)
-        print(ohlcv[0])
-    finally:
-        await exchange.close()
-    return
+        if not ohlcv:
+            raise HTTPException(status_code=404, detail="価格データ取得エラー")
 
-    # 1. 価格取得は非同期(httpx)でサクッと行う
-    HYPERLIQUID_API_URL = "https://api.hyperliquid.xyz/info"
-    payload = {"type": "allMids"}
+        # ohlcv[0] = [timestamp, open, high, low, close, volume]
+        base_price = float(ohlcv[0][1])
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(HYPERLIQUID_API_URL, json=payload)
-            data = response.json()
-            # 取得したデータから価格を抽出（floatに変換）
-            btc_price = float(data.get("BTC"))
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"価格取得失敗: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Binance API接続エラー: {e}")
 
-    # 2. DBへの書き込みは、既存の models.py と Session(db) を使用
-    now = datetime.now()
+    # DB追加
     new_round = models.GameRound(
-        start_at=now,
-        closed_at=now + timedelta(minutes=5),
-        target_at=now + timedelta(minutes=10),
-        base_price=btc_price,  # 取得した価格をセット
+        start_at=start_at,
+        closed_at=start_at + timedelta(hours=1),
+        target_at=start_at + timedelta(hours=4),
+        base_price=base_price,
     )
 
     try:
         db.add(new_round)
-        db.commit()  # 同期のDB接続なので await は不要
+        db.commit()
         db.refresh(new_round)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"DB保存失敗: {e}")
 
-    return {"status": "success", "round_id": new_round.id, "base_price": btc_price}
+    return new_round
