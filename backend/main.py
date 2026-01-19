@@ -1,5 +1,4 @@
 import models
-import requests
 import schemas
 from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
@@ -51,17 +50,3 @@ def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="予期せぬエラーが発生しました")
 
     return user
-
-
-@app.get("/test-binance")
-def test_binance():
-    url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-    try:
-        response = requests.get(url, timeout=10)
-        return {
-            "status_code": response.status_code,
-            "data": response.json(),
-            "message": "Binance APIへの接続に成功しました！",
-        }
-    except Exception as e:
-        return {"error": str(e), "message": "接続に失敗しました"}

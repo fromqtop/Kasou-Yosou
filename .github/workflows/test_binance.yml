@@ -1,0 +1,12 @@
+name: Binance API Test
+
+on:
+  workflow_dispatch: # ボタンを押して手動で実行できるようにする
+
+jobs:
+  test_api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch BTC Price from Binance
+        run: |
+          curl -s "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
