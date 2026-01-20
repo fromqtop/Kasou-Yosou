@@ -1,0 +1,29 @@
+name: Run Migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/migrations/**"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install alembic sqlalchemy psycopg2-binary
+
+      - name: Run migration
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        run: |
+          alembic upgrade head
