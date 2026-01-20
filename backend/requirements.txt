@@ -10,3 +10,6 @@ psycopg2-binary
 # Validation
 pydantic
 pydantic-settings
+
+# Others
+ccxt
