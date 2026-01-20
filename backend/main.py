@@ -7,7 +7,7 @@ from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 app = FastAPI()
 
@@ -102,6 +102,42 @@ def create_game_round(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"DB保存失敗: {e}")
 
     return new_round
+
+
+@app.get("/game_rounds/active", response_model=schemas.GameRoundResponse | None)
+def get_active_game_round(db: Session = Depends(get_db)):
+    now = datetime.now(timezone.utc)
+    stmt = (
+        select(models.GameRound)
+        .where(models.GameRound.start_at <= now)
+        .where(models.GameRound.closed_at > now)
+        .order_by(models.GameRound.start_at.desc())
+        .limit(1)
+    ).options(
+        joinedload(models.GameRound.predictions).joinedload(models.Prediction.user)
+    )
+
+    game_round = db.scalars(stmt).first()
+
+    if not game_round:
+        return None
+
+    formatted_predictions = []
+    for p in game_round.predictions:
+        formatted_predictions.append(
+            {"name": p.user.name, "choice": p.choice, "is_ai": p.user.is_ai}
+        )
+
+    return {
+        "id": game_round.id,
+        "start_at": game_round.start_at,
+        "closed_at": game_round.closed_at,
+        "target_at": game_round.target_at,
+        "base_price": game_round.base_price,
+        "result_price": game_round.result_price,
+        "winning_choice": game_round.winning_choice,
+        "predictions": formatted_predictions,
+    }
 
 
 @app.post(
