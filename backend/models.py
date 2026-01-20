@@ -7,7 +7,10 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    pass
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now()
+    )
 
 
 class User(Base):
@@ -17,10 +20,6 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     is_ai: Mapped[bool] = mapped_column(default=False)
     status: Mapped[str] = mapped_column(default="active", nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
-    )
 
     def __repr__(self) -> str:
         return f"User(uid={self.uid!r}, name={self.name!r}, is_ai={self.is_ai!r})"
@@ -36,7 +35,7 @@ class PredictionChoice(enum.IntEnum):
 class GameRound(Base):
     __tablename__ = "game_rounds"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     start_at: Mapped[datetime] = mapped_column(unique=True, index=True)
     closed_at: Mapped[datetime] = mapped_column()
     target_at: Mapped[datetime] = mapped_column()
@@ -57,7 +56,6 @@ class Prediction(Base):
         ForeignKey("game_rounds.id"), nullable=False
     )
     choice: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     # リレーションシップ
     game_round: Mapped["GameRound"] = relationship(back_populates="predictions")
