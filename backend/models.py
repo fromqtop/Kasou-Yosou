@@ -2,14 +2,16 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Float, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
 
@@ -36,9 +38,11 @@ class GameRound(Base):
     __tablename__ = "game_rounds"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    start_at: Mapped[datetime] = mapped_column(unique=True, index=True)
-    closed_at: Mapped[datetime] = mapped_column()
-    target_at: Mapped[datetime] = mapped_column()
+    start_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), unique=True, index=True
+    )
+    closed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    target_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     base_price: Mapped[float] = mapped_column(Float)
     result_price: Mapped[float | None] = mapped_column(Float)
     winning_choice: Mapped[int | None] = mapped_column(Integer)

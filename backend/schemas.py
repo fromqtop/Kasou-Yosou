@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from models import PredictionChoice
 from pydantic import BaseModel, ConfigDict
 
 
@@ -29,3 +30,14 @@ class GameRoundCreate(BaseModel):
     closed_at: datetime
     target_at: datetime
     base_price: float
+
+
+class PredictionCreate(BaseModel):
+    user_uid: UUID
+    choice: PredictionChoice
+
+
+class PredictionCreateResponse(BaseModel):
+    id: int
+    game_round_id: int
+    choice: PredictionChoice
