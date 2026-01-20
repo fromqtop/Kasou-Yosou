@@ -6,16 +6,9 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-# .envがあればそこから、なければローカルのsqliteを使う
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database.db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# SQLite用の設定
-connect_args = {}
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
-
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
