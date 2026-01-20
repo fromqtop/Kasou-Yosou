@@ -6,6 +6,16 @@ on:
       - main
     paths:
       - "backend/migrations/**"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "実行するコマンドを選択 (upgrade: 最新へ, downgrade: 1つ戻す)"
+        required: true
+        default: "upgrade"
+        type: choice
+        options:
+          - upgrade
+          - downgrade
 
 jobs:
   migrate:
@@ -26,4 +36,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
         run: |
-          alembic upgrade head
+          cd backend
+          if [ "${{ github.event.inputs.command }}" = "upgrade" ]; then
+            alembic upgrade head
+          else
+            alembic downgrade -1
+          fi
