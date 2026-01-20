@@ -29,9 +29,9 @@ class User(Base):
 
 # 予測の選択肢
 class PredictionChoice(enum.IntEnum):
-    BEARISH = 1  #  - 0.5%以下
-    NEUTRAL = 2  #  - 0.5% ~ +0.5%
-    BULLISH = 3  #  + 0.5%以上
+    BEARISH = 1  #  - 0.3%以下
+    NEUTRAL = 2  #  - 0.3% ~ +0.3%
+    BULLISH = 3  #  + 0.3%以上
 
 
 class GameRound(Base):
