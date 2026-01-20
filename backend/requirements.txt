@@ -1,7 +1,11 @@
+# Web framework
 fastapi
-uvicorn
+uvicorn[standard]
+
+# Database
 sqlalchemy
-requests
-python-dotenv
-alembic
 psycopg2-binary
+
+# Validation
+pydantic
+pydantic-settings
