@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     name: str
 
 
-class UserResponse(BaseModel):
+class UserCreateResponse(BaseModel):
     uid: UUID
     name: str
 

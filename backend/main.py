@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, joinedload
 app = FastAPI()
 
 
-@app.post("/users", response_model=schemas.UserResponse)
+@app.post("/users", response_model=schemas.UserCreateResponse)
 def create_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     new_user = models.User(name=user_in.name)
     db.add(new_user)
