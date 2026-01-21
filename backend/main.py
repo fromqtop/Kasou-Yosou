@@ -86,8 +86,7 @@ def create_game_round(db: Session = Depends(get_db)):
         if not ohlcv:
             raise HTTPException(status_code=404, detail="価格データ取得エラー")
 
-        # ohlcv[0] ・・・ [timestamp, open, high, low, close, volume]
-        base_price = float(ohlcv[0][1])
+        base_price = float(ohlcv[0][1])  # [1]:open
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Binance API接続エラー: {e}")
@@ -135,14 +134,12 @@ def settle_game_rounds(db: Session = Depends(get_db)):
             # １時間前のローソクのcloseを使う
             since_dt = round.target_at - timedelta(hours=1)
             since = int(since_dt.timestamp() * 1000)
-            print(since)
             ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
-            print(ohlcv[0][0])
+
             if not ohlcv:
                 continue
 
-            # ohlcv[0] ・・・ [timestamp, open, high, low, close, volume]
-            round.result_price = ohlcv[0][4]
+            round.result_price = ohlcv[0][4]  # [4]:close
 
             diff_pct = (round.result_price - round.base_price) / round.base_price
             if diff_pct <= -0.003:
