@@ -68,9 +68,8 @@ def create_game_round(db: Session = Depends(get_db)):
         )
 
     # binanceの価格を取得
-    exchange = ccxt.binance({"enableRateLimit": True})
-
     try:
+        exchange = ccxt.binance({"enableRateLimit": True})
         symbol = "BTC/USDT"
         timeframe = "1h"
         since = int(start_at.timestamp() * 1000)
@@ -84,6 +83,9 @@ def create_game_round(db: Session = Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Binance API接続エラー: {e}")
+
+    finally:
+        exchange.close()
 
     # DB追加
     new_round = models.GameRound(
