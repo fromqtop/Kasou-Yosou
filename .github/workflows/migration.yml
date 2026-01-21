@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "backend/migrations/**"
+      - "backend/alembic/versions/**"
   workflow_dispatch:
     inputs:
       command:
