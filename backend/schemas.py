@@ -5,26 +5,33 @@ from models import PredictionChoice
 from pydantic import BaseModel, ConfigDict
 
 
+class ResponseBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserMini(ResponseBase):
+    name: str
+    is_ai: bool
+
+
 class UserCreate(BaseModel):
     name: str
 
 
-class UserCreateResponse(BaseModel):
+class UserCreateResponse(ResponseBase):
     uid: UUID
     name: str
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class UserDelete(BaseModel):
     uid: UUID
 
 
-class UserDeleteResponse(BaseModel):
+class UserDeleteResponse(ResponseBase):
     uid: UUID
 
 
-class GameRoundCreate(BaseModel):
+class GameRoundCreateResponse(ResponseBase):
     id: int
     start_at: datetime
     closed_at: datetime
@@ -32,13 +39,12 @@ class GameRoundCreate(BaseModel):
     base_price: float
 
 
-class predictionInfo(BaseModel):
-    name: str
+class prediction(BaseModel):
+    user: UserMini
     choice: PredictionChoice
-    is_ai: bool
 
 
-class GameRoundResponse(BaseModel):
+class GameRoundResponse(ResponseBase):
     id: int
     start_at: datetime
     closed_at: datetime
@@ -46,7 +52,7 @@ class GameRoundResponse(BaseModel):
     base_price: float
     result_price: float | None
     winning_choice: PredictionChoice | None
-    predictions: list[predictionInfo]
+    predictions: list[prediction]
 
 
 class PredictionCreate(BaseModel):
@@ -54,7 +60,7 @@ class PredictionCreate(BaseModel):
     choice: PredictionChoice
 
 
-class PredictionCreateResponse(BaseModel):
+class PredictionCreateResponse(ResponseBase):
     id: int
     game_round_id: int
     choice: PredictionChoice

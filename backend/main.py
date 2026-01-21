@@ -55,7 +55,7 @@ def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
     return user
 
 
-@app.post("/game_rounds", response_model=schemas.GameRoundCreate)
+@app.post("/game_rounds", response_model=schemas.GameRoundResponse)
 def create_game_round(db: Session = Depends(get_db)):
     # ラウンドの開始時刻
     start_at = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
@@ -84,9 +84,6 @@ def create_game_round(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Binance API接続エラー: {e}")
 
-    finally:
-        exchange.close()
-
     # DB追加
     new_round = models.GameRound(
         start_at=start_at,
@@ -108,6 +105,7 @@ def create_game_round(db: Session = Depends(get_db)):
 
 @app.get("/game_rounds/active", response_model=schemas.GameRoundResponse | None)
 def get_active_game_round(db: Session = Depends(get_db)):
+    # 現在有効なゲームラウンドを取得
     now = datetime.now(timezone.utc)
     stmt = (
         select(models.GameRound)
@@ -120,26 +118,7 @@ def get_active_game_round(db: Session = Depends(get_db)):
     )
 
     game_round = db.scalars(stmt).first()
-
-    if not game_round:
-        return None
-
-    formatted_predictions = []
-    for p in game_round.predictions:
-        formatted_predictions.append(
-            {"name": p.user.name, "choice": p.choice, "is_ai": p.user.is_ai}
-        )
-
-    return {
-        "id": game_round.id,
-        "start_at": game_round.start_at,
-        "closed_at": game_round.closed_at,
-        "target_at": game_round.target_at,
-        "base_price": game_round.base_price,
-        "result_price": game_round.result_price,
-        "winning_choice": game_round.winning_choice,
-        "predictions": formatted_predictions,
-    }
+    return game_round
 
 
 @app.post(
