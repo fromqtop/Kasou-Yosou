@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  settle:
+  create-round:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Settle API
+      - name: Call Create Round API
         run: |
           curl -X POST "${{ secrets.API_URL }}/game_rounds"
