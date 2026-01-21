@@ -103,6 +103,60 @@ def create_game_round(db: Session = Depends(get_db)):
     return new_round
 
 
+@app.post("/game_rounds/settle")
+def settle_game_rounds(db: Session = Depends(get_db)):
+    # 正解が登録されていないゲームラウンドを取得
+    now = datetime.now(timezone.utc)
+
+    stmt = (
+        select(models.GameRound)
+        .where(models.GameRound.target_at <= now)
+        .where(models.GameRound.result_price.is_(None))
+    )
+    game_rounds = db.scalars(stmt).all()
+
+    if not game_rounds:
+        return {"message": "現在、判定待ちのラウンドはありません。"}
+
+    try:
+        exchange = ccxt.binance({"enableRateLimit": True})
+        symbol = "BTC/USDT"
+        timeframe = "1h"
+        settled_ids = []
+        for round in game_rounds:
+            # １時間前のローソクのcloseを使う
+            since_dt = round.target_at - timedelta(hours=1)
+            since = int(since_dt.timestamp() * 1000)
+            print(since)
+            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
+            print(ohlcv[0][0])
+            if not ohlcv:
+                continue
+
+            # ohlcv[0] ・・・ [timestamp, open, high, low, close, volume]
+            round.result_price = ohlcv[0][4]
+
+            diff_pct = (round.result_price - round.base_price) / round.base_price
+            if diff_pct <= -0.003:
+                round.winning_choice = models.PredictionChoice.BEARISH
+            elif diff_pct >= 0.003:
+                round.winning_choice = models.PredictionChoice.BULLISH
+            else:
+                round.winning_choice = models.PredictionChoice.NEUTRAL
+
+            db.commit()
+            settled_ids.append(round.id)
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"判定処理エラー: {e}")
+
+    return {
+        "message": f"{len(settled_ids)}件のラウンドを確定",
+        "settled_ids": settled_ids,
+    }
+
+
 @app.get("/game_rounds/active", response_model=schemas.GameRoundResponse | None)
 def get_active_game_round(db: Session = Depends(get_db)):
     # 現在有効なゲームラウンドを取得
