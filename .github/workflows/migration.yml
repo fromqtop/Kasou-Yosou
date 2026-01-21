@@ -37,8 +37,9 @@ jobs:
           DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
         run: |
           cd backend
-          if [ "${{ github.event.inputs.command }}" = "upgrade" ]; then
-            alembic upgrade head
-          else
+          # 手動実行かつ downgrade が選ばれた時だけ downgrade し、それ以外（push等）はすべて upgrade
+          if [ "${{ github.event.inputs.command }}" = "downgrade" ]; then
             alembic downgrade -1
+          else
+            alembic upgrade head
           fi
