@@ -1,0 +1,14 @@
+name: Hourly Settle Rounds Task
+
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Settle API
+        run: |
+          curl -X POST "${{ secrets.API_URL }}/settle"
