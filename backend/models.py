@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -22,6 +22,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     is_ai: Mapped[bool] = mapped_column(default=False)
     status: Mapped[str] = mapped_column(default="active", nullable=False)
+    points: Mapped[int] = mapped_column(default=1000, nullable=False)
 
     def __repr__(self) -> str:
         return f"User(uid={self.uid!r}, name={self.name!r}, is_ai={self.is_ai!r})"
@@ -60,6 +61,8 @@ class Prediction(Base):
         ForeignKey("game_rounds.id"), nullable=False
     )
     choice: Mapped[PredictionChoice] = mapped_column(Integer, nullable=False)
+    is_won: Mapped[bool | None] = mapped_column(Boolean, default=None)
+    earned_points: Mapped[int] = mapped_column(default=0)
 
     # リレーションシップ
     game_round: Mapped["GameRound"] = relationship(back_populates="predictions")

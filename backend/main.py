@@ -5,9 +5,9 @@ import models
 import schemas
 from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 app = FastAPI()
 
@@ -110,6 +110,44 @@ def create_game_round(db: Session = Depends(get_db)):
     return new_round
 
 
+def settle_round(db: Session, round: models.GameRound, result_price: float):
+    """
+    1つのラウンドに対して、勝敗判定とポイント分配を行う
+    """
+    # ゲームラウンドに正解をセットする
+    round.result_price = result_price
+
+    diff_pct = (round.result_price - round.base_price) / round.base_price
+    if diff_pct <= -0.003:
+        round.winning_choice = models.PredictionChoice.BEARISH
+    elif diff_pct >= 0.003:
+        round.winning_choice = models.PredictionChoice.BULLISH
+    else:
+        round.winning_choice = models.PredictionChoice.NEUTRAL
+
+    # ポイント計算・配布
+    num_participants = len(round.predictions)
+
+    if num_participants > 0:
+        total_pool = num_participants * 100 * 2  # 参加人数 * 100pt * 2(ボーナス)
+
+        win_predictions = [
+            p for p in round.predictions if p.choice == round.winning_choice
+        ]
+
+        if win_predictions:
+            share = total_pool // len(win_predictions)
+
+        # ユーザーの所持ポイント、予想データのポイントを更新
+        for p in round.predictions:
+            if p.choice == round.winning_choice:
+                p.is_won = True
+                p.earned_points = share
+                p.user.points += share
+            else:
+                p.is_won = False
+
+
 @app.post("/game_rounds/settle")
 def settle_game_rounds(db: Session = Depends(get_db)):
     # 正解が登録されていないゲームラウンドを取得
@@ -117,6 +155,11 @@ def settle_game_rounds(db: Session = Depends(get_db)):
 
     stmt = (
         select(models.GameRound)
+        .options(
+            selectinload(models.GameRound.predictions).selectinload(
+                models.Prediction.user
+            )
+        )
         .where(models.GameRound.target_at <= now)
         .where(models.GameRound.result_price.is_(None))
     )
@@ -125,36 +168,31 @@ def settle_game_rounds(db: Session = Depends(get_db)):
     if not game_rounds:
         return {"message": "現在、判定待ちのラウンドはありません。"}
 
-    try:
-        exchange = ccxt.binance({"enableRateLimit": True})
-        symbol = "BTC/USDT"
-        timeframe = "1h"
-        settled_ids = []
-        for round in game_rounds:
-            # １時間前のローソクのcloseを使う
+    exchange = ccxt.binance({"enableRateLimit": True})
+    symbol = "BTC/USDT"
+    timeframe = "1h"
+
+    settled_ids = []
+    for round in game_rounds:
+        try:
+            # 判定時刻１時間前のローソクのcloseを取得
             since_dt = round.target_at - timedelta(hours=1)
             since = int(since_dt.timestamp() * 1000)
+
             ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
 
             if not ohlcv:
                 continue
 
-            round.result_price = ohlcv[0][4]  # [4]:close
+            settle_round(db, round, ohlcv[0][4])  # ohlcv[0][4]: close
 
-            diff_pct = (round.result_price - round.base_price) / round.base_price
-            if diff_pct <= -0.003:
-                round.winning_choice = models.PredictionChoice.BEARISH
-            elif diff_pct >= 0.003:
-                round.winning_choice = models.PredictionChoice.BULLISH
-            else:
-                round.winning_choice = models.PredictionChoice.NEUTRAL
-
+            # データ更新
             db.commit()
             settled_ids.append(round.id)
 
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"判定処理エラー: {e}")
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"異常終了: {e}")
 
     return {
         "message": f"{len(settled_ids)}件のラウンドを確定",
@@ -203,14 +241,14 @@ def create_prediction(
             status_code=400, detail="このラウンドはすでに締め切られています"
         )
 
-    # ユーザーの存在確認
-    stmt = select(exists().where(models.User.uid == prediction_in.user_uid))
-    user_exists = db.scalar(stmt)
+    # ユーザーの取得
+    stmt = select(models.User).where(models.User.uid == prediction_in.user_uid)
+    user = db.scalar(stmt)
 
-    if not user_exists:
+    if not user:
         raise HTTPException(status_code=404, detail="ユーザーが存在しません")
 
-    # 予測の登録（または更新）
+    # 登録済の予測があるか確認
     stmt = (
         select(models.Prediction)
         .where(models.Prediction.user_uid == prediction_in.user_uid)
@@ -219,29 +257,27 @@ def create_prediction(
     prediction = db.scalar(stmt)
 
     if prediction:
-        try:
-            prediction.choice = prediction_in.choice
-            db.commit()
-            db.refresh(prediction)
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"DB保存失敗: {e}")
-
-        return prediction
-
+        prediction.choice = prediction_in.choice
     else:
-        new_prediction = models.Prediction(
+        # ポイントが不足している場合は参加不可
+        if user.points < 100:
+            raise HTTPException(status_code=400, detail="ポイントが不足しています")
+
+        prediction = models.Prediction(
             user_uid=prediction_in.user_uid,
             game_round_id=game_round_id,
             choice=prediction_in.choice,
         )
+        db.add(prediction)
+        user.points -= 100
 
-        try:
-            db.add(new_prediction)
-            db.commit()
-            db.refresh(new_prediction)
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"DB保存失敗: {e}")
+    try:
+        db.commit()
+        db.refresh(prediction)
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"DB更新失敗: {e}")
 
-        return new_prediction
+    print(prediction.__dict__)
+    return prediction

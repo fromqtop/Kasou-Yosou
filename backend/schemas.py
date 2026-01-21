@@ -12,6 +12,7 @@ class ResponseBase(BaseModel):
 class UserMini(ResponseBase):
     name: str
     is_ai: bool
+    points: int
 
 
 class UserCreate(BaseModel):
@@ -21,6 +22,8 @@ class UserCreate(BaseModel):
 class UserCreateResponse(ResponseBase):
     uid: UUID
     name: str
+    is_ai: bool
+    points: int
 
 
 class UserDelete(BaseModel):
@@ -64,3 +67,4 @@ class PredictionCreateResponse(ResponseBase):
     id: int
     game_round_id: int
     choice: PredictionChoice
+    user: UserMini
