@@ -1,4 +1,4 @@
-name: Hourly Settle Rounds Task
+name: Hourly Create Round Task
 
 on:
   schedule:
@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Call Settle API
         run: |
-          curl -X POST "${{ secrets.API_URL }}/game_rounds/settle"
+          curl -X POST "${{ secrets.API_URL }}/game_rounds"
