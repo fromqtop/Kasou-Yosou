@@ -59,7 +59,7 @@ class Prediction(Base):
     game_round_id: Mapped[int] = mapped_column(
         ForeignKey("game_rounds.id"), nullable=False
     )
-    choice: Mapped[int] = mapped_column(Integer, nullable=False)
+    choice: Mapped[PredictionChoice] = mapped_column(Integer, nullable=False)
 
     # リレーションシップ
     game_round: Mapped["GameRound"] = relationship(back_populates="predictions")
