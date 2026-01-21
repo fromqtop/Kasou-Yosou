@@ -55,6 +55,14 @@ def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
     return user
 
 
+@app.get("/game_rounds", response_model=list[schemas.GameRoundResponse])
+def get_game_rounds(db: Session = Depends(get_db)):
+    stmt = select(models.GameRound).order_by(models.GameRound.id)
+    game_round = db.scalars(stmt)
+
+    return game_round
+
+
 @app.post("/game_rounds", response_model=schemas.GameRoundResponse)
 def create_game_round(db: Session = Depends(get_db)):
     # ラウンドの開始時刻
