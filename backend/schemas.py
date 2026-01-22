@@ -34,6 +34,10 @@ class UserDeleteResponse(ResponseBase):
     uid: UUID
 
 
+class UserLookup(BaseModel):
+    uid: UUID
+
+
 class GameRoundCreateResponse(ResponseBase):
     id: int
     start_at: datetime

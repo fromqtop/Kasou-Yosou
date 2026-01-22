@@ -5,11 +5,26 @@ import models
 import schemas
 from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 app = FastAPI()
+
+# 許可するオリジン（フロントエンドのURL）
+origins = [
+    "http://localhost:5173",  # ローカル開発用
+    "https://kasou-yosou.pages.dev/",  # Cloudflare Pages 本番用
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/users", response_model=schemas.UserCreateResponse)
@@ -51,6 +66,17 @@ def delete_user(user_in: schemas.UserDelete, db: Session = Depends(get_db)):
         db.rollback()
         print(f"予期せぬエラー: {e}")
         raise HTTPException(status_code=500, detail="予期せぬエラーが発生しました")
+
+    return user
+
+
+@app.post("/users/me", response_model=schemas.UserMini)
+def get_current_user(data: schemas.UserLookup, db: Session = Depends(get_db)):
+    stmt = select(models.User).where(models.User.uid == data.uid)
+    user = db.scalar(stmt)
+
+    if not user or user.status == "deleted":
+        raise HTTPException(status_code=404, detail="ユーザーが存在しません")
 
     return user
 
