@@ -5,7 +5,7 @@ import { useUser } from "./hooks/useUser";
 import RegisterPage from "./pages/RegisterPage";
 
 const App: React.FC = () => {
-  const { user, loading, refetchUser } = useUser();
+  const { user, refetchUser } = useUser();
 
   return (
     <BrowserRouter>
