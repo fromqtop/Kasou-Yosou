@@ -226,19 +226,6 @@ def settle_game_rounds(db: Session = Depends(get_db)):
     }
 
 
-@app.get("/game_rounds/{game_round_id}", response_model=schemas.GameRoundResponse)
-def get_game_round(game_round_id: int, db: Session = Depends(get_db)):
-    stmt = select(models.GameRound).where(models.GameRound.id == game_round_id)
-    game_round = db.scalar(stmt)
-
-    if not game_round:
-        raise HTTPException(
-            status_code=404, detail=f"ラウンド #{game_round_id} は存在しません"
-        )
-
-    return game_round
-
-
 @app.get("/game_rounds/active", response_model=schemas.GameRoundResponse | None)
 def get_active_game_round(db: Session = Depends(get_db)):
     # 現在有効なゲームラウンドを取得
@@ -254,6 +241,19 @@ def get_active_game_round(db: Session = Depends(get_db)):
     )
 
     game_round = db.scalars(stmt).first()
+    return game_round
+
+
+@app.get("/game_rounds/{game_round_id}", response_model=schemas.GameRoundResponse)
+def get_game_round(game_round_id: int, db: Session = Depends(get_db)):
+    stmt = select(models.GameRound).where(models.GameRound.id == game_round_id)
+    game_round = db.scalar(stmt)
+
+    if not game_round:
+        raise HTTPException(
+            status_code=404, detail=f"ラウンド #{game_round_id} は存在しません"
+        )
+
     return game_round
 
 
