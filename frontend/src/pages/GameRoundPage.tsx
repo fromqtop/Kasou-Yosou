@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PriceDisplay from "../components/PriceDisplay";
 import TradingViewWidget from "../components/TradingViewWidget";
-import {
-  Navigate,
-  useNavigate,
-  useOutletContext,
-  useParams,
-} from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import type { PredictionCreateResponse, UserMini } from "../types";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -14,27 +9,23 @@ import { useGameRound } from "../hooks/useGameRound";
 import PredictionButtonGroup from "../components/PredictionButtonGroup";
 
 const GameRoundPage: React.FC = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  if (!id) return <Navigate to="/" replace />;
-
-  const { gameRound } = useGameRound(id);
-  if (gameRound && id == "active") {
-    navigate(`/game_rounds/${gameRound.id}`, { replace: true });
-  }
-
+  const { gameRound } = useGameRound(id ?? "");
   const { user, refetchUser } = useOutletContext<{
     user: UserMini | null;
     refetchUser: () => void;
   }>();
-
-  const userChoice =
-    gameRound?.predictions.find(
-      (prediction) => prediction.user.name == user?.name,
-    )?.choice ?? null;
-
-  const [selected, setSelected] = useState<number | null>(userChoice);
+  const [selected, setSelected] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const userChoice =
+      gameRound?.predictions.find(
+        (prediction) => prediction.user.name == user?.name,
+      )?.choice ?? null;
+
+    setSelected(userChoice);
+  }, [gameRound]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -56,7 +47,7 @@ const GameRoundPage: React.FC = () => {
       alert("予想を登録しました！");
       refetchUser();
     } catch (error) {
-      console.error("予想登録に失敗:", error);
+      alert("登録に失敗しました");
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +86,7 @@ const GameRoundPage: React.FC = () => {
             cursor-pointer
             disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !selected}
           >
             SUBMIT - Cost 100 pts
           </button>

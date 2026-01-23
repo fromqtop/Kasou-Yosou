@@ -25,8 +25,10 @@ export const useGameRound = (id: string) => {
   };
 
   useEffect(() => {
+    if (!id) return;
+    setGameRound(null);
     fetchGameRound();
-  }, []);
+  }, [id]);
 
   return { gameRound, setGameRound };
 };

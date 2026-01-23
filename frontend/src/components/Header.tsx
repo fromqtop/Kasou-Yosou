@@ -21,12 +21,14 @@ const Header: React.FC<Props> = ({ user }) => {
         {/* ナビ */}
         <ul className="flex gap-5 items-center">
           {links.map((link) => (
-            <Link
-              to={link.to}
-              className="text-zinc-400 font-bold hover:text-white hover:underline underline-offset-5 decoration-white"
-            >
-              {link.text}
-            </Link>
+            <li key={link.to}>
+              <Link
+                to={link.to}
+                className="text-zinc-400 font-bold hover:text-white hover:underline underline-offset-5 decoration-white"
+              >
+                {link.text}
+              </Link>
+            </li>
           ))}
         </ul>
 
@@ -43,15 +45,14 @@ const Header: React.FC<Props> = ({ user }) => {
             </div>
           ) : (
             // 未ログイン時はSignUpボタン
-            <div
+            <Link
+              to="register"
               className="h-10 my-5 p-5 bg-zinc-800 border border-zinc-500 rounded-lg flex items-center justify-center
               hover:bg-zinc-700 active:bg-zinc-600
                 focus:outline-none focus:ring-2 focus:ring-zinc-400"
             >
-              <Link to="register">
-                <span>Sign Up</span>
-              </Link>
-            </div>
+              <span>Sign Up</span>
+            </Link>
           )}
         </div>
       </div>
