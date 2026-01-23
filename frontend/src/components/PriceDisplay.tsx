@@ -8,8 +8,7 @@ interface Props {
 
 const PriceDisplay: React.FC<Props> = ({ price, startAt }) => {
   return (
-    <div className="grid grid-cols-3 gap-2 items-end">
-      <div></div>
+    <div>
       <div className="text-6xl font-bold">
         $
         {price.toLocaleString(undefined, {
@@ -17,7 +16,7 @@ const PriceDisplay: React.FC<Props> = ({ price, startAt }) => {
           maximumFractionDigits: 2,
         })}
       </div>
-      <div className="text-xl text-zinc-400">
+      <div className="text-right text-md text-zinc-400">
         at {dayjs(startAt).format("M/D HH:mm")}
       </div>
     </div>

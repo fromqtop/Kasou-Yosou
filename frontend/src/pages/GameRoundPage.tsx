@@ -16,6 +16,7 @@ const GameRoundPage: React.FC = () => {
     refetchUser: () => void;
   }>();
   const [selected, setSelected] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ユーザーが登録済の選択肢
@@ -25,7 +26,31 @@ const GameRoundPage: React.FC = () => {
     )?.choice ?? null;
 
   useEffect(() => {
+    if (!gameRound) return;
+    // ユーザーの選択値をDBデータで更新
     setSelected(userChoice);
+
+    // タイマー
+    const updateTimer = () => {
+      const now = dayjs();
+      const target = dayjs(gameRound.closed_at);
+      const diff = target.diff(now); // ミリ秒単位の差分
+
+      if (diff <= 0) {
+        setTimeLeft("00:00");
+        return;
+      }
+
+      const minutes = Math.floor(diff / 1000 / 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      const padMin = String(minutes).padStart(2, "0");
+      const padSec = String(seconds).padStart(2, "0");
+      setTimeLeft(`${padMin}:${padSec}`);
+    };
+
+    updateTimer();
+    const timerId = setInterval(updateTimer, 1000);
+    return () => clearInterval(timerId);
   }, [gameRound]);
 
   const handleSubmit = async () => {
@@ -61,6 +86,11 @@ const GameRoundPage: React.FC = () => {
     <>
       {gameRound ? (
         <div className="flex flex-col items-center w-full gap-4">
+          <div className="w-full flex gap-5 justify-start">
+            <div className="font-bold">Round #{gameRound.id}</div>
+            <div>Ends in {timeLeft}</div>
+          </div>
+
           <PriceDisplay
             price={gameRound.base_price}
             startAt={gameRound.start_at}

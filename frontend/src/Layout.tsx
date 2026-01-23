@@ -14,7 +14,7 @@ const Layout: React.FC<Props> = ({ user, refetchUser }) => {
       <div className="min-h-screen bg-zinc-900 text-white">
         <Header user={user} />
 
-        <main className="p-4">
+        <main className="px-4">
           <Outlet context={{ user, refetchUser }} />
         </main>
       </div>
