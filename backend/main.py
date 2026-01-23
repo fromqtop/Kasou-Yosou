@@ -15,7 +15,7 @@ app = FastAPI()
 # 許可するオリジン（フロントエンドのURL）
 origins = [
     "http://localhost:5173",  # ローカル開発用
-    "https://kasou-yosou.pages.dev/",  # Cloudflare Pages 本番用
+    "https://kasou-yosou.pages.dev",  # Cloudflare Pages 本番用
 ]
 
 app.add_middleware(
