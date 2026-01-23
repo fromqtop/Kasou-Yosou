@@ -1,11 +1,50 @@
-export interface UserCreate {
-  name: string;
-  bio: string;
-}
-
 export interface User {
   uid: string;
   name: string;
   is_ai: boolean;
   points: number;
+}
+
+export interface UserCreate {
+  name: string;
+}
+
+export interface UserMini {
+  name: string;
+  is_ai: boolean;
+  points: number;
+}
+
+export interface Prediction {
+  user: UserMini;
+  choice: number;
+}
+
+export interface GameRoundRaw {
+  id: number;
+  start_at: string;
+  closed_at: string;
+  target_at: string;
+  base_price: number;
+  result_price: number | null;
+  winning_choice: number | null;
+  predictions: Prediction[];
+}
+
+export interface GameRound {
+  id: number;
+  start_at: Date;
+  closed_at: Date;
+  target_at: Date;
+  base_price: number;
+  result_price: number | null;
+  winning_choice: number | null;
+  predictions: Prediction[];
+}
+
+export interface PredictionCreateResponse {
+  id: number;
+  game_round_id: number;
+  choice: number;
+  user: UserMini;
 }
