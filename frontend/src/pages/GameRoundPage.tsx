@@ -10,7 +10,7 @@ import PredictionButtonGroup from "../components/PredictionButtonGroup";
 
 const GameRoundPage: React.FC = () => {
   const { id } = useParams();
-  const { gameRound } = useGameRound(id ?? "");
+  const { gameRound, reFetchGameRound } = useGameRound(id ?? "");
   const { user, refetchUser } = useOutletContext<{
     user: UserMini | null;
     refetchUser: () => void;
@@ -18,12 +18,13 @@ const GameRoundPage: React.FC = () => {
   const [selected, setSelected] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const userChoice =
-      gameRound?.predictions.find(
-        (prediction) => prediction.user.name == user?.name,
-      )?.choice ?? null;
+  // ユーザーが登録済の選択肢
+  const userChoice =
+    gameRound?.predictions.find(
+      (prediction) => prediction.user.name == user?.name,
+    )?.choice ?? null;
 
+  useEffect(() => {
     setSelected(userChoice);
   }, [gameRound]);
 
@@ -45,6 +46,9 @@ const GameRoundPage: React.FC = () => {
       );
 
       alert("予想を登録しました！");
+
+      // ゲームデータ最新化・ポイント更新
+      reFetchGameRound();
       refetchUser();
     } catch (error) {
       alert("登録に失敗しました");
@@ -86,9 +90,9 @@ const GameRoundPage: React.FC = () => {
             cursor-pointer
             disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSubmit}
-            disabled={isSubmitting || !selected}
+            disabled={isSubmitting || !selected || userChoice === selected}
           >
-            SUBMIT - Cost 100 pts
+            {!userChoice ? "SUBMIT - Cost 100 pts" : "UPDATE CHOICE"}
           </button>
         </div>
       ) : (

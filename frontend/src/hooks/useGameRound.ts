@@ -30,5 +30,5 @@ export const useGameRound = (id: string) => {
     fetchGameRound();
   }, [id]);
 
-  return { gameRound, setGameRound };
+  return { gameRound, setGameRound, reFetchGameRound: fetchGameRound };
 };
