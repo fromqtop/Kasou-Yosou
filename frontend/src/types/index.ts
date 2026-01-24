@@ -1,3 +1,5 @@
+export type Choice = 1 | 2 | 3;
+
 export interface User {
   uid: string;
   name: string;
@@ -17,7 +19,7 @@ export interface UserMini {
 
 export interface Prediction {
   user: UserMini;
-  choice: number;
+  choice: Choice;
 }
 
 export interface GameRoundRaw {
@@ -27,7 +29,7 @@ export interface GameRoundRaw {
   target_at: string;
   base_price: number;
   result_price: number | null;
-  winning_choice: number | null;
+  winning_choice: Choice | null;
   predictions: Prediction[];
 }
 
@@ -38,13 +40,13 @@ export interface GameRound {
   target_at: Date;
   base_price: number;
   result_price: number | null;
-  winning_choice: number | null;
+  winning_choice: Choice | null;
   predictions: Prediction[];
 }
 
 export interface PredictionCreateResponse {
   id: number;
   game_round_id: number;
-  choice: number;
+  choice: Choice;
   user: UserMini;
 }
