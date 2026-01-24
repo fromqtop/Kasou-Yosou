@@ -1,6 +1,7 @@
 import React from "react";
 import type { UserMini } from "../types";
 import { Link } from "react-router-dom";
+import UserIcon from "../components/UserIcon";
 
 interface Props {
   user: UserMini | null;
@@ -13,7 +14,7 @@ const Header: React.FC<Props> = ({ user }) => {
   ];
 
   return (
-    <header className="w-full h-15 px-5 flex justify-between items-center border-b border-zinc-800">
+    <header className="w-full h-15 px-5 flex justify-between items-center border-b border-zinc-700">
       {/* ロゴ */}
       <h1 className="text-2xl font-bold">Kasou Yosou</h1>
 
@@ -39,9 +40,7 @@ const Header: React.FC<Props> = ({ user }) => {
               <div className="h-10 px-5 bg-zinc-800 border border-zinc-500 rounded-lg flex items-center justify-center">
                 <span>{user.points} pts</span>
               </div>
-              <div className="h-10 w-10 bg-zinc-800 font-bold border border-zinc-500 rounded-full flex items-center justify-center">
-                <span>{[...user.name][0]}</span>
-              </div>
+              <UserIcon userName={user.name} />
             </div>
           ) : (
             // 未ログイン時はSignUpボタン
