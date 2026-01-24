@@ -33,7 +33,7 @@ const variants: Record<number, VariantStyle> = {
   // neutral
   2: {
     buttonStyle: "hover:border-gray-400 hover:bg-gray-50/10",
-    selectedButtonStyle: "border-gray-200! bg-gray-700/70!",
+    selectedButtonStyle: "border-gray-100! bg-gray-500/60!",
     badgeStyle: "bg-gray-200 text-gray-600!",
   },
   // bullish

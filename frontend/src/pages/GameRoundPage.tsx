@@ -7,6 +7,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useGameRound } from "../hooks/useGameRound";
 import PredictionButtonGroup from "../components/PredictionButtonGroup";
+import ParticipantList from "../components/ParticipantList";
 
 const GameRoundPage: React.FC = () => {
   const { id } = useParams();
@@ -82,48 +83,56 @@ const GameRoundPage: React.FC = () => {
     }
   };
 
+  const participants =
+    gameRound?.predictions.map((pred) => ({
+      userName: pred.user.name,
+      choice: pred.choice,
+    })) ?? [];
+
   return (
     <>
       {gameRound ? (
-        <div className="flex flex-col items-center w-full gap-4">
-          <div className="w-full flex gap-5 justify-start">
-            <div className="font-bold">Round #{gameRound.id}</div>
-            <div>Ends in {timeLeft}</div>
+        <div className="flex">
+          <div className="px-4 flex flex-col items-center w-full gap-4">
+            <div className="w-full flex gap-5 justify-start">
+              <div className="font-bold">Round #{gameRound.id}</div>
+              <div>Ends in {timeLeft}</div>
+            </div>
+
+            <PriceDisplay
+              price={gameRound.base_price}
+              startAt={gameRound.start_at}
+            />
+
+            <TradingViewWidget />
+
+            <p className="text-xl">
+              How will the{" "}
+              <span className="underline">
+                price at {dayjs(gameRound.target_at).format("HH:mm")}
+              </span>{" "}
+              compare to {dayjs(gameRound.start_at).format("HH:mm")} ?
+            </p>
+
+            <PredictionButtonGroup
+              basePrice={gameRound.base_price}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <button
+              className="px-8 py-3 font-bold
+              border rounded-md border-indigo-700
+              bg-indigo-900/50 hover:bg-indigo-900/70 active:bg-indigo-900 transition
+              cursor-pointer
+              disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !selected || userChoice === selected}
+            >
+              {!userChoice ? "SUBMIT - Cost 100 pts" : "UPDATE CHOICE"}
+            </button>
           </div>
-
-          <PriceDisplay
-            price={gameRound.base_price}
-            startAt={gameRound.start_at}
-          />
-
-          <TradingViewWidget />
-
-          <p className="text-4xl font-bold">Bull or Bear?</p>
-          <p>
-            How will the{" "}
-            <span className="underline">
-              price at {dayjs(gameRound.target_at).format("HH:mm")}
-            </span>{" "}
-            compare to {dayjs(gameRound.start_at).format("HH:mm")} ?
-          </p>
-
-          <PredictionButtonGroup
-            basePrice={gameRound.base_price}
-            selected={selected}
-            setSelected={setSelected}
-          />
-
-          <button
-            className="px-8 py-3 font-bold
-            border rounded-md border-indigo-700
-            bg-indigo-900/50 hover:bg-indigo-900/70 active:bg-indigo-900 transition
-            cursor-pointer
-            disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !selected || userChoice === selected}
-          >
-            {!userChoice ? "SUBMIT - Cost 100 pts" : "UPDATE CHOICE"}
-          </button>
+          <ParticipantList participants={participants} />
         </div>
       ) : (
         <div>Loading ...</div>
