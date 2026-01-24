@@ -1,0 +1,7 @@
+ccxt
+holidays
+joblib
+numpy
+pandas
+requests
+scikit-learn
