@@ -3,7 +3,7 @@ import Layout from "./Layout";
 import GameRoundPage from "./pages/GameRoundPage";
 import { useUser } from "./hooks/useUser";
 import RegisterPage from "./pages/RegisterPage";
-import LeaderBoard from "./pages/LeaderBoard";
+import LeaderBoardPage from "./pages/LeaderBoardPage";
 
 const App: React.FC = () => {
   const { user, refetchUser } = useUser();
@@ -18,7 +18,7 @@ const App: React.FC = () => {
           />
           <Route path="/game_rounds/:id" element={<GameRoundPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/leaderBoard" element={<LeaderBoard />} />
+          <Route path="/leaderBoard" element={<LeaderBoardPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

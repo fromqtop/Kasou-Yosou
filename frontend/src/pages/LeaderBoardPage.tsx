@@ -4,7 +4,7 @@ import type { LeaderBoard, UserMini, UserStats } from "../types";
 import { useOutletContext } from "react-router-dom";
 import UserIcon from "../components/UserIcon";
 
-const LeaderBoard: React.FC = () => {
+const LeaderBoardPage: React.FC = () => {
   const { user } = useOutletContext<{
     user: UserMini | null;
   }>();
@@ -127,4 +127,4 @@ const LeaderBoard: React.FC = () => {
   );
 };
 
-export default LeaderBoard;
+export default LeaderBoardPage;
