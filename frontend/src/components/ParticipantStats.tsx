@@ -6,20 +6,20 @@ const CHOICE_CONFIG = {
   1: {
     text: "BEARISH",
     Icon: TrendingDown,
-    textColor: "text-red-700",
-    bgColor: "bg-red-700",
+    textColor: "text-red-600",
+    bgColor: "bg-red-600",
   },
   2: {
     text: "NEUTRAL",
     Icon: EqualApproximately,
-    textColor: "text-gray-500",
-    bgColor: "bg-gray-500",
+    textColor: "text-gray-400",
+    bgColor: "bg-gray-400",
   },
   3: {
     text: "BULLISH",
     Icon: TrendingUp,
-    textColor: "text-green-700",
-    bgColor: "bg-green-700",
+    textColor: "text-green-600",
+    bgColor: "bg-green-600",
   },
 } as const;
 
@@ -36,7 +36,10 @@ const ParticipantStats: React.FC<Props> = ({ choices }) => {
           const count = choices.filter((c) => c === key).length;
 
           return (
-            <div className={`flex items-center gap-1 ${config.textColor}`}>
+            <div
+              key={key}
+              className={`flex items-center gap-1 ${config.textColor}`}
+            >
               <config.Icon size={18} /> <span className="text-sm">{count}</span>
             </div>
           );
@@ -50,13 +53,11 @@ const ParticipantStats: React.FC<Props> = ({ choices }) => {
           const pct = (count / choices.length) * 100;
 
           return (
-            <>
-              <div
-                className={`h-1 ${config.bgColor}`}
-                style={{ width: `${pct}%` }}
-              ></div>
-              <div className="bg-red-"></div>
-            </>
+            <div
+              key={key}
+              className={`h-1 ${config.bgColor}`}
+              style={{ width: `${pct}%` }}
+            ></div>
           );
         })}
       </div>

@@ -4,8 +4,10 @@ import axios from "axios";
 
 export const useGameRound = (id: string) => {
   const [gameRound, setGameRound] = useState<GameRound | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchGameRound = async () => {
+    setIsLoading(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.get<GameRoundRaw>(
@@ -21,6 +23,8 @@ export const useGameRound = (id: string) => {
       setGameRound(formattedGameRound);
     } catch (error) {
       console.error("ラウンド取得に失敗:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -30,5 +34,10 @@ export const useGameRound = (id: string) => {
     fetchGameRound();
   }, [id]);
 
-  return { gameRound, setGameRound, reFetchGameRound: fetchGameRound };
+  return {
+    gameRound,
+    setGameRound,
+    reFetchGameRound: fetchGameRound,
+    isLoading,
+  };
 };

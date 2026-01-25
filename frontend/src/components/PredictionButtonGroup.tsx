@@ -16,14 +16,14 @@ type PredictionButtonOptions = {
 
 interface Props {
   basePrice: number;
-  selected: number | null;
-  setSelected: React.Dispatch<React.SetStateAction<number | null>>;
+  selectedChoice: number | null;
+  setSelectedChoice: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const PredictionButtonGroup: React.FC<Props> = ({
   basePrice,
-  selected,
-  setSelected,
+  selectedChoice,
+  setSelectedChoice,
 }) => {
   const buttonProps: PredictionButtonOptions[] = [
     {
@@ -52,8 +52,8 @@ const PredictionButtonGroup: React.FC<Props> = ({
         <PredictionButton
           key={btnProps.choiceId}
           {...btnProps}
-          selected={selected === btnProps.choiceId}
-          onClick={() => setSelected(btnProps.choiceId)}
+          selected={selectedChoice === btnProps.choiceId}
+          onClick={() => setSelectedChoice(btnProps.choiceId)}
         />
       ))}
     </div>
