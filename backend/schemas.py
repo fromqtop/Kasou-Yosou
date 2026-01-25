@@ -74,7 +74,7 @@ class PredictionCreateResponse(ResponseBase):
     user: UserMini
 
 
-class LeaderBoardResponse(ResponseBase):
+class LeaderBoardItem(ResponseBase):
     rank: int
     username: str
     points: int
