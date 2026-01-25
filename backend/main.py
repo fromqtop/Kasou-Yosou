@@ -6,7 +6,7 @@ import schemas
 from database import get_db
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -320,3 +320,46 @@ def create_prediction(
 
     print(prediction.__dict__)
     return prediction
+
+
+@app.get("/leaderboard", response_model=list[schemas.LeaderBoardResponse])
+def get_leaderboard(db: Session = Depends(get_db)):
+    # 1. outerjoin() を使う（直感的でオススメ）
+    # stmt = select(models.User).join(
+    #     models.Prediction, models.User.uid == models.Prediction.user_uid, isouter=True
+    # )
+
+    # クエリの構築
+    stmt = (
+        select(
+            models.User.name.label("username"),
+            func.count(models.Prediction.id).label("rounds"),
+            func.sum(case((models.Prediction.is_won, 1), else_=0)).label("wins"),
+            func.sum(models.User.points).label("points"),
+        )
+        .outerjoin(models.Prediction, models.User.uid == models.Prediction.user_uid)
+        .group_by(models.User.uid, models.User.name)
+        .order_by(func.sum(models.User.points).desc())
+    )
+
+    # 実行
+    data = db.execute(stmt).all()
+
+    if not data:
+        raise HTTPException(status_code=404, detail="データが取得できませんでした")
+
+    results = []
+
+    for i, d in enumerate(data):
+        results.append(
+            {
+                "rank": i + 1,
+                "username": d.username,
+                "points": d.points,
+                "total_rounds": d.rounds,
+                "wins": d.wins,
+                "win_rate": d.wins / d.rounds if d.rounds > 0 else 0,
+            }
+        )
+
+    return results

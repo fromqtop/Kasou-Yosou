@@ -72,3 +72,12 @@ class PredictionCreateResponse(ResponseBase):
     game_round_id: int
     choice: PredictionChoice
     user: UserMini
+
+
+class LeaderBoardResponse(ResponseBase):
+    rank: int
+    username: str
+    points: int
+    total_rounds: int
+    wins: int
+    win_rate: float
