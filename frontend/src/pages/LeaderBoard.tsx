@@ -49,7 +49,7 @@ const LeaderBoard: React.FC = () => {
   const winRate = userStats ? Math.round(userStats.win_rate * 100) : "-";
 
   return (
-    <div className="max-w-screen-md mx-auto">
+    <div className="max-w-3xl mx-auto">
       <h2 className="my-5 text-3xl font-bold">Leader Board</h2>
 
       {user ? (
