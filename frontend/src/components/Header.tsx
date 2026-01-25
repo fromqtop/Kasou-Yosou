@@ -10,7 +10,7 @@ interface Props {
 const Header: React.FC<Props> = ({ user }) => {
   const links = [
     { text: "Live Prediction", to: "/game_rounds/active" },
-    // { text: "Leader Board", to: "/" },
+    { text: "Leader Board", to: "/leaderboard" },
   ];
 
   return (
@@ -25,7 +25,8 @@ const Header: React.FC<Props> = ({ user }) => {
             <li key={link.to}>
               <Link
                 to={link.to}
-                className="text-zinc-400 font-bold hover:text-white hover:underline underline-offset-5 decoration-white"
+                className="text-zinc-400 font-bold
+                hover:text-white hover:underline underline-offset-5 decoration-white"
               >
                 {link.text}
               </Link>

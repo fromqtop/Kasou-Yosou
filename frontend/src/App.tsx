@@ -3,6 +3,7 @@ import Layout from "./Layout";
 import GameRoundPage from "./pages/GameRoundPage";
 import { useUser } from "./hooks/useUser";
 import RegisterPage from "./pages/RegisterPage";
+import LeaderBoard from "./pages/LeaderBoard";
 
 const App: React.FC = () => {
   const { user, refetchUser } = useUser();
@@ -15,8 +16,9 @@ const App: React.FC = () => {
             path="/"
             element={<Navigate to="/game_rounds/active" replace />}
           />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/game_rounds/:id" element={<GameRoundPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/leaderBoard" element={<LeaderBoard />} />
         </Route>
       </Routes>
     </BrowserRouter>

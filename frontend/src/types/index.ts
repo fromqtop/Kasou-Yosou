@@ -50,3 +50,21 @@ export interface PredictionCreateResponse {
   choice: Choice;
   user: UserMini;
 }
+
+export interface UserStats {
+  rank: number;
+  username: string;
+  points: number;
+  total_rounds: number;
+  wins: number;
+  win_rate: number;
+}
+
+export interface LeaderBoard {
+  rank: number;
+  username: string;
+  points: number;
+  total_rounds: number;
+  wins: number;
+  win_rate: number;
+}
