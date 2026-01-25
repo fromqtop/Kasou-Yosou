@@ -322,27 +322,21 @@ def create_prediction(
     return prediction
 
 
-@app.get("/leaderboard", response_model=list[schemas.LeaderBoardResponse])
+@app.get("/leaderboard", response_model=list[schemas.LeaderBoardItem])
 def get_leaderboard(db: Session = Depends(get_db)):
-    # 1. outerjoin() を使う（直感的でオススメ）
-    # stmt = select(models.User).join(
-    #     models.Prediction, models.User.uid == models.Prediction.user_uid, isouter=True
-    # )
-
-    # クエリの構築
     stmt = (
         select(
+            func.rank().over(order_by=models.User.points.desc()).label("rank"),
             models.User.name.label("username"),
             func.count(models.Prediction.id).label("rounds"),
             func.sum(case((models.Prediction.is_won, 1), else_=0)).label("wins"),
-            func.sum(models.User.points).label("points"),
+            models.User.points.label("points"),
         )
         .outerjoin(models.Prediction, models.User.uid == models.Prediction.user_uid)
-        .group_by(models.User.uid, models.User.name)
-        .order_by(func.sum(models.User.points).desc())
+        .group_by(models.User.uid)
+        .order_by(models.User.points.desc())
     )
 
-    # 実行
     data = db.execute(stmt).all()
 
     if not data:
@@ -353,7 +347,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
     for i, d in enumerate(data):
         results.append(
             {
-                "rank": i + 1,
+                "rank": d.rank,
                 "username": d.username,
                 "points": d.points,
                 "total_rounds": d.rounds,
@@ -363,3 +357,34 @@ def get_leaderboard(db: Session = Depends(get_db)):
         )
 
     return results
+
+
+@app.get("/leaderboard/me", response_model=schemas.LeaderBoardItem)
+def get_user_leaderboard_item(username: str, db: Session = Depends(get_db)):
+    stmt = (
+        select(
+            models.User.name.label("username"),
+            func.count(models.Prediction.id).label("rounds"),
+            func.sum(case((models.Prediction.is_won, 1), else_=0)).label("wins"),
+            models.User.points.label("points"),
+        )
+        .where(models.User.name == username)
+        .group_by(models.User.uid)
+    )
+
+    me = db.execute(stmt).first()
+
+    if not me:
+        raise HTTPException(status_code=404, detail="データを取得できませんでした")
+
+    stmt = select(func.count(models.User.uid)).where(models.User.points > me.points)
+    higher_users_count = db.scalar(stmt)
+
+    return {
+        "rank": higher_users_count + 1,
+        "username": me.username,
+        "points": me.points,
+        "total_rounds": me.rounds,
+        "wins": me.wins,
+        "win_rate": me.wins / me.rounds if me.rounds > 0 else 0,
+    }
