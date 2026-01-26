@@ -54,7 +54,7 @@ const LeaderBoardPage: React.FC = () => {
 
       {user ? (
         <>
-          <div className="relative w-fit py-2 px-4 flex gap-4 border border-zinc-500 rounded bg-zinc-800">
+          <div className="relative w-fit my-10 mx-auto py-2 px-4 flex gap-4 border border-zinc-500 rounded bg-zinc-800">
             <UserIcon userName={user?.name} />
 
             <div>
@@ -102,12 +102,12 @@ const LeaderBoardPage: React.FC = () => {
           </thead>
           <tbody>
             {leaderBoard.map((item) => (
-              <tr>
+              <tr key={item.username}>
                 <td className="text-right">{item.rank}</td>
                 <td className="text-left flex items-center gap-2">
                   {item.username}
                   {item.username === user?.name && (
-                    <div className="px-1 h-2/3 rounded text-xs bg-blue-900">
+                    <div className="px-2 h-2/3 rounded text-sm font-bold bg-blue-800">
                       YOU
                     </div>
                   )}

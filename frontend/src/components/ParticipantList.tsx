@@ -30,7 +30,7 @@ const ParticipantList: React.FC<Props> = ({ participants, winningChoice }) => {
             />
           ))
         ) : (
-          <p>参加者なし</p>
+          <p>No Participants...</p>
         )}
       </div>
     </div>

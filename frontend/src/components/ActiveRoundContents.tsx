@@ -75,7 +75,7 @@ const ActiveRoundContents: React.FC<Props> = ({
 
         <p className="text-xl">
           How will the{" "}
-          <span className="underline">
+          <span className="underline font-bold">
             price at {dayjs(gameRound.target_at).format("HH:mm")}
           </span>{" "}
           compare to {dayjs(gameRound.start_at).format("HH:mm")} ?
