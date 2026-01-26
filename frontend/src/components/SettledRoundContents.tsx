@@ -23,6 +23,8 @@ const CHOICE_TEXTS = {
 };
 
 const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
+  if (!gameRound.winning_choice || !gameRound.result_price) return;
+
   const { user } = useOutletContext<{
     user: UserMini | null;
   }>();
@@ -44,7 +46,7 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
     : "No Entry";
 
   const priceChange =
-    ((gameRound.result_price! - gameRound.base_price) * 100) /
+    ((gameRound.result_price - gameRound.base_price) * 100) /
     gameRound.base_price;
 
   useEffect(() => {
@@ -88,9 +90,9 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
           {/* 価格変化 */}
           <div
             className={`rounded-full font-bold px-7 mt-8
-              ${BADGE_COLORS[gameRound.winning_choice!]}`}
+              ${BADGE_COLORS[gameRound.winning_choice]}`}
           >
-            {CHOICE_TEXTS[gameRound.winning_choice!]}
+            {CHOICE_TEXTS[gameRound.winning_choice]}
           </div>
           <div className="relative flex items-end gap-2 mt-1">
             <div className="flex">

@@ -7,7 +7,7 @@ interface Props {
     userName: string;
     choice: Choice;
   }[];
-  winningChoice: Choice | null;
+  winningChoice?: Choice;
 }
 
 const ParticipantList: React.FC<Props> = ({ participants, winningChoice }) => {
