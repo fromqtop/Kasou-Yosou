@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from models import PredictionChoice
+from models import ChartData, PredictionChoice
 from pydantic import BaseModel, ConfigDict
 
 
@@ -60,6 +60,7 @@ class GameRoundResponse(ResponseBase):
     result_price: float | None
     winning_choice: PredictionChoice | None
     predictions: list[prediction]
+    chart_data: ChartData
 
 
 class PredictionCreate(BaseModel):

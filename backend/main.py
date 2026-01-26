@@ -94,6 +94,9 @@ def create_game_round(db: Session = Depends(get_db)):
     # ラウンドの開始時刻
     start_at = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
 
+    # チャートの取得開始時刻
+    chart_start_at = start_at - timedelta(days=1)
+
     # ラウンド存在チェック
     stmt = select(models.GameRound).where(models.GameRound.start_at == start_at)
     if db.scalar(stmt):
@@ -106,13 +109,14 @@ def create_game_round(db: Session = Depends(get_db)):
         exchange = ccxt.binance({"enableRateLimit": True})
         symbol = "BTC/USDT"
         timeframe = "1h"
-        since = int(start_at.timestamp() * 1000)
-        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
+        since = int(chart_start_at.timestamp() * 1000)
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=50)
 
         if not ohlcv:
             raise HTTPException(status_code=404, detail="価格データ取得エラー")
 
-        base_price = float(ohlcv[0][1])  # [1]:open
+        base_price = float(ohlcv[-1][1])  # [1]:open
+        chart_data = {"before": [(item[0], item[1]) for item in ohlcv], "after": []}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Binance API接続エラー: {e}")
@@ -123,6 +127,7 @@ def create_game_round(db: Session = Depends(get_db)):
         closed_at=start_at + timedelta(minutes=30),
         target_at=start_at + timedelta(hours=4),
         base_price=base_price,
+        chart_data=chart_data,
     )
 
     try:
@@ -136,12 +141,22 @@ def create_game_round(db: Session = Depends(get_db)):
     return new_round
 
 
-def settle_round(db: Session, round: models.GameRound, result_price: float):
+def settle_round(
+    round: models.GameRound,
+    result_price: float,
+    chart_data_after: list[models.PriceAtTime],
+):
     """
     1つのラウンドに対して、勝敗判定とポイント分配を行う
     """
     # ゲームラウンドに正解をセットする
     round.result_price = result_price
+
+    # チャートデータを追加する
+    round.chart_data = {
+        "before": round.chart_data.get("before", []),
+        "after": chart_data_after,
+    }
 
     diff_pct = (round.result_price - round.base_price) / round.base_price
     if diff_pct <= -0.003:
@@ -201,16 +216,25 @@ def settle_game_rounds(db: Session = Depends(get_db)):
     settled_ids = []
     for round in game_rounds:
         try:
-            # 判定時刻１時間前のローソクのcloseを取得
-            since_dt = round.target_at - timedelta(hours=1)
+            # 判定時刻3時間前からローソク取得し、open × 3 と 最後のcloseを使用。
+            since_dt = round.target_at - timedelta(hours=3)
             since = int(since_dt.timestamp() * 1000)
 
-            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1)
+            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=3)
 
             if not ohlcv:
                 continue
 
-            settle_round(db, round, ohlcv[0][4])  # ohlcv[0][4]: close
+            result_price = ohlcv[-1][4]  # close
+            chart_data_after = [(item[0], item[1]) for item in ohlcv]
+            last_timestamp = ohlcv[-1][0] + (1000 * 60 * 60)
+            chart_data_after.append(
+                (
+                    last_timestamp,
+                    result_price,
+                )
+            )
+            settle_round(round, result_price, chart_data_after)
 
             # データ更新
             db.commit()

@@ -1,9 +1,11 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import Tuple
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from typing_extensions import TypedDict
 
 
 class Base(DeclarativeBase):
@@ -35,6 +37,14 @@ class PredictionChoice(enum.IntEnum):
     BULLISH = 3  #  + 0.3%以上
 
 
+PriceAtTime = Tuple[int, float]  # (timestamp, close_price)
+
+
+class ChartData(TypedDict):
+    before: list[PriceAtTime]
+    after: list[PriceAtTime]
+
+
 class GameRound(Base):
     __tablename__ = "game_rounds"
 
@@ -47,6 +57,7 @@ class GameRound(Base):
     base_price: Mapped[float] = mapped_column(Float)
     result_price: Mapped[float | None] = mapped_column(Float)
     winning_choice: Mapped[int | None] = mapped_column(Integer)
+    chart_data: Mapped[ChartData] = mapped_column(JSON, nullable=False)
 
     # リレーションシップ：この回の予測一覧
     predictions: Mapped[list["Prediction"]] = relationship(back_populates="game_round")
