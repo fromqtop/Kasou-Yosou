@@ -368,6 +368,7 @@ def get_user_leaderboard_item(username: str, db: Session = Depends(get_db)):
             func.sum(case((models.Prediction.is_won, 1), else_=0)).label("wins"),
             models.User.points.label("points"),
         )
+        .outerjoin(models.Prediction, models.User.uid == models.Prediction.user_uid)
         .where(models.User.name == username)
         .group_by(models.User.uid)
     )
