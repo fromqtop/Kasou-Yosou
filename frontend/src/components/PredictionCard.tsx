@@ -1,8 +1,14 @@
-import { EqualApproximately, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  Award,
+  EqualApproximately,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import UserIconMini from "./UserIconMini";
 import type { Choice } from "../types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { twMerge } from "tailwind-merge";
 
 dayjs.extend(relativeTime);
 
@@ -15,18 +21,30 @@ const CHOICE_CONFIG = {
 interface Props {
   userName: string;
   choice: Choice;
+  isWon: boolean;
 }
 
-const PredictionCard: React.FC<Props> = ({ userName, choice }) => {
+const PredictionCard: React.FC<Props> = ({ userName, choice, isWon }) => {
   const Icon = CHOICE_CONFIG[choice].Icon;
 
   return (
-    <div className="bg-zinc-800 border rounded-md border-zinc-500 px-2 py-1">
-      <div className="flex justify-between items-center">
+    <div
+      className={twMerge(
+        "bg-zinc-800 border rounded-md border-zinc-500 px-2 py-1",
+        isWon && "border-amber-300 bg-amber-300/10",
+      )}
+    >
+      <div className="relative flex justify-between items-center">
         <div className="flex items-center gap-2 ">
           <UserIconMini userName={userName} />
           <div className="text-sm font-bold">{userName}</div>
         </div>
+        {isWon && (
+          <Award
+            strokeWidth={2}
+            className="absolute top-0 -right-2 text-amber-300 h-5"
+          />
+        )}
       </div>
 
       <div

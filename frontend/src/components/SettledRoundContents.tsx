@@ -16,6 +16,12 @@ const BADGE_COLORS = {
   3: "bg-green-600",
 };
 
+const CHOICE_TEXTS = {
+  1: "BEARISH",
+  2: "NEUTRAL",
+  3: "BULLISH",
+};
+
 const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
   const { user } = useOutletContext<{
     user: UserMini | null;
@@ -57,6 +63,7 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
     <div className="flex">
       <div className="w-full px-4">
         <div className="flex flex-col items-center my-4">
+          {/* メインメッセージ */}
           {userResult === "Win" && (
             <>
               <p className="text-5xl font-bold my-5">Congrats! 🎉</p>
@@ -78,7 +85,14 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
             <p className="text-5xl font-bold my-5">Round Summary</p>
           )}
 
-          <div className="relative flex items-end gap-2 mt-5">
+          {/* 価格変化 */}
+          <div
+            className={`rounded-full font-bold px-7 mt-8
+              ${BADGE_COLORS[gameRound.winning_choice!]}`}
+          >
+            {CHOICE_TEXTS[gameRound.winning_choice!]}
+          </div>
+          <div className="relative flex items-end gap-2 mt-1">
             <div className="flex">
               <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center mr-2">
                 <Bitcoin className="w-5 h-5 stroke-2.5 text-white" />
@@ -108,7 +122,10 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
         <TradingViewWidget />
       </div>
 
-      <ParticipantList participants={participants} />
+      <ParticipantList
+        participants={participants}
+        winningChoice={gameRound.winning_choice}
+      />
     </div>
   );
 };

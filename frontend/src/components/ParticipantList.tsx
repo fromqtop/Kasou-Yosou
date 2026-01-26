@@ -7,9 +7,10 @@ interface Props {
     userName: string;
     choice: Choice;
   }[];
+  winningChoice: Choice | null;
 }
 
-const ParticipantList: React.FC<Props> = ({ participants }) => {
+const ParticipantList: React.FC<Props> = ({ participants, winningChoice }) => {
   const choices = participants.map((p) => p.choice);
 
   return (
@@ -25,6 +26,7 @@ const ParticipantList: React.FC<Props> = ({ participants }) => {
               key={participant.userName}
               userName={participant.userName}
               choice={participant.choice}
+              isWon={participant.choice === winningChoice}
             />
           ))
         ) : (
