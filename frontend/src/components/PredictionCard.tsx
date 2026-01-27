@@ -30,7 +30,7 @@ const PredictionCard: React.FC<Props> = ({ userName, choice, isWon }) => {
   return (
     <div
       className={twMerge(
-        "bg-zinc-800 border rounded-md border-zinc-500 px-2 py-1",
+        "w-70 bg-zinc-800 border rounded-md border-zinc-500 px-2 py-1",
         isWon && "border-amber-300 bg-amber-300/10",
       )}
     >

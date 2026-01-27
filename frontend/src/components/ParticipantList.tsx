@@ -14,12 +14,16 @@ const ParticipantList: React.FC<Props> = ({ participants, winningChoice }) => {
   const choices = participants.map((p) => p.choice);
 
   return (
-    <div className="w-75 px-4 border-l border-zinc-700">
-      <div className="my-2 text-2xl font-bold">Bets</div>
+    <div
+      className="flex-row lg:flex-col lg:w-80
+    bg-zinc-900 p-4"
+    >
+      <div>
+        <div className="my-2 text-2xl font-bold">Bets</div>
+        <ParticipantStats choices={choices} />
+      </div>
 
-      <ParticipantStats choices={choices} />
-
-      <div className="flex flex-col gap-3 mt-5">
+      <div className="flex flex-wrap gap-3 mt-6">
         {participants && participants.length ? (
           participants.map((participant) => (
             <PredictionCard

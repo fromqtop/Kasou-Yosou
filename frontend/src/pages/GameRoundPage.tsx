@@ -4,6 +4,7 @@ import { useGameRound } from "../hooks/useGameRound";
 import ActiveRoundContents from "../components/ActiveRoundContents";
 import SettledRoundContents from "../components/SettledRoundContents";
 import dayjs from "dayjs";
+import ParticipantList from "../components/ParticipantList";
 
 const GameRoundPage: React.FC = () => {
   const { id } = useParams();
@@ -43,28 +44,39 @@ const GameRoundPage: React.FC = () => {
       <p className="w-fit mx-auto mt-5">No rounds in progress. Stay tuned!</p>
     );
 
+  const participants = gameRound.predictions.map((pred) => ({
+    userName: pred.user.name,
+    choice: pred.choice,
+  }));
+
   return (
-    <>
-      <div className="w-full flex gap-5 justify-start px-4 mt-1">
-        <div className="font-bold">Round #{gameRound.id}</div>
-        <div>{timeLeft}</div>
+    <div className="flex-1 lg:flex">
+      <div className="flex-1">
+        <div className="w-full flex gap-5 justify-start px-4 mt-1">
+          <div className="font-bold">Round #{gameRound.id}</div>
+          <div>{timeLeft}</div>
+        </div>
+
+        {!gameRound.winning_choice ? (
+          new Date() < gameRound.closed_at ? (
+            <ActiveRoundContents
+              gameRound={gameRound}
+              reFetchGameRound={reFetchGameRound}
+            />
+          ) : (
+            <p className="w-fit mx-auto mt-5">
+              We're tallying the results. Please check back in a few minutes!
+            </p>
+          )
+        ) : (
+          <SettledRoundContents gameRound={gameRound} />
+        )}
       </div>
 
-      {!gameRound.winning_choice ? (
-        new Date() < gameRound.closed_at ? (
-          <ActiveRoundContents
-            gameRound={gameRound}
-            reFetchGameRound={reFetchGameRound}
-          />
-        ) : (
-          <p className="w-fit mx-auto mt-5">
-            We're tallying the results. Please check back in a few minutes!
-          </p>
-        )
-      ) : (
-        <SettledRoundContents gameRound={gameRound} />
-      )}
-    </>
+      <div className="lg:border-l border-zinc-700">
+        <ParticipantList participants={participants} />
+      </div>
+    </div>
   );
 };
 

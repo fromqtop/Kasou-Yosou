@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import PriceDisplay from "./PriceDisplay";
-import TradingViewWidget from "./TradingViewWidget";
 import PredictionButtonGroup from "./PredictionButtonGroup";
-import ParticipantList from "./ParticipantList";
 import type { GameRound, PredictionCreateResponse, UserMini } from "../types";
 import dayjs from "dayjs";
 import axios from "axios";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
+import BtcLineChart from "./BtcLineChart";
 
 interface Props {
   gameRound: GameRound;
@@ -58,25 +57,21 @@ const ActiveRoundContents: React.FC<Props> = ({
 
   const currentChoice = selectedChoice || savedChoice;
 
-  const participants = gameRound.predictions.map((pred) => ({
-    userName: pred.user.name,
-    choice: pred.choice,
-  }));
-
   return (
-    <div className="flex">
-      <div className="px-4 flex flex-col items-center w-full gap-4">
+    <div className="lg:flex">
+      <div className="px-2 py-4 flex flex-col items-center w-full gap-4">
         <PriceDisplay
           price={gameRound.base_price}
           startAt={gameRound.start_at}
         />
-
-        <TradingViewWidget />
-
+        <div className="h-80 w-full max-w-4xl mx-auto">
+          <BtcLineChart chartRawData={gameRound.chart_data} />
+        </div>
         <p className="text-xl">
           How will the{" "}
           <span className="underline font-bold">
             price at {dayjs(gameRound.target_at).format("HH:mm")}
+            <br className="md:hidden" />
           </span>{" "}
           compare to {dayjs(gameRound.start_at).format("HH:mm")} ?
         </p>
@@ -87,22 +82,35 @@ const ActiveRoundContents: React.FC<Props> = ({
           setSelectedChoice={setSelectedChoice}
         />
 
-        <button
-          className="px-8 py-3 font-bold
-            border rounded-md border-indigo-700
+        {/* 投稿ボタン */}
+        {user && (
+          <button
+            className="px-8 py-3 font-bold
+              border rounded-md border-indigo-700
             bg-indigo-900/50 hover:bg-indigo-900/70 active:bg-indigo-900 transition
-            cursor-pointer
-            disabled:cursor-not-allowed disabled:opacity-50"
-          onClick={handleSubmit}
-          disabled={
-            isSubmitting || !selectedChoice || selectedChoice === savedChoice
-          }
-        >
-          {!savedChoice ? "SUBMIT - Cost 100 pts" : "UPDATE CHOICE"}
-        </button>
-      </div>
+              cursor-pointer
+              disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleSubmit}
+            disabled={
+              isSubmitting || !selectedChoice || selectedChoice === savedChoice
+            }
+          >
+            {!savedChoice ? "SUBMIT - Cost 100 pts" : "UPDATE CHOICE"}
+          </button>
+        )}
 
-      <ParticipantList participants={participants} />
+        {/* // 未ログイン時はSignUpボタン */}
+        {!user && (
+          <Link
+            to="/register"
+            className="h-10 my-5 p-5 bg-zinc-800 border border-zinc-500 rounded-lg flex items-center justify-center
+              hover:bg-zinc-700 active:bg-zinc-600
+                focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          >
+            <span>Sign Up</span>
+          </Link>
+        )}
+      </div>
     </div>
   );
 };

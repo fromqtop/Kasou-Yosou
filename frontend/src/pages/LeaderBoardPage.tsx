@@ -50,7 +50,7 @@ const LeaderBoardPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h2 className="my-5 text-3xl font-bold">Leader Board</h2>
+      <h2 className="my-5 px-4 text-3xl font-bold">Leader Board</h2>
 
       {user ? (
         <>
@@ -92,12 +92,11 @@ const LeaderBoardPage: React.FC = () => {
         <table className="mx-auto border-separate border-spacing-x-4">
           <thead>
             <tr>
-              <th className="w-10 text-right">Rank</th>
+              <th className="w-10 text-right">#</th>
               <th className="w-50 text-left">Name</th>
               <th className="w-20 text-right">Points</th>
               <th className="w-20 text-right">Total Rounds</th>
-              <th className="w-20 text-right">Wins</th>
-              <th className="w-20 text-right">Win Rate</th>
+              <th className="w-30 text-right">Wins</th>
             </tr>
           </thead>
           <tbody>
@@ -114,9 +113,8 @@ const LeaderBoardPage: React.FC = () => {
                 </td>
                 <td className="text-right">{item.points}</td>
                 <td className="text-right">{item.total_rounds}</td>
-                <td className="text-right">{item.wins}</td>
                 <td className="text-right">
-                  {Math.round(item.win_rate * 100)} %
+                  {item.wins} ({Math.round(item.win_rate * 100)} %)
                 </td>
               </tr>
             ))}

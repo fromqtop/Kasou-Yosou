@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
-import TradingViewWidget from "./TradingViewWidget";
-import ParticipantList from "./ParticipantList";
 import type { GameRound, UserMini } from "../types";
 import { Bitcoin } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import confetti from "canvas-confetti";
+import BtcLineChart from "./BtcLineChart";
 
 interface Props {
   gameRound: GameRound;
@@ -29,11 +28,6 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
     user: UserMini | null;
   }>();
 
-  const participants = gameRound.predictions.map((pred) => ({
-    userName: pred.user.name,
-    choice: pred.choice,
-  }));
-
   const savedChoice = user
     ? (gameRound.predictions.find((pred) => pred.user.name == user.name)
         ?.choice ?? null)
@@ -54,7 +48,7 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
       confetti({
         particleCount: 250, // 粒の数
         spread: 150, // 広がり
-        colors: ["#13e3fa", "#00ff26", "#fff459"], // UIに合わせた色
+        colors: ["#13e3fa", "#00ff26", "#fff459"],
       });
     };
 
@@ -62,7 +56,7 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
   }, []);
 
   return (
-    <div className="flex">
+    <div className="flex flex-col md:flex-row">
       <div className="w-full px-4">
         <div className="flex flex-col items-center my-4">
           {/* メインメッセージ */}
@@ -94,40 +88,50 @@ const SettledRoundContents: React.FC<Props> = ({ gameRound }) => {
           >
             {CHOICE_TEXTS[gameRound.winning_choice]}
           </div>
-          <div className="relative flex items-end gap-2 mt-1">
+
+          <div className="flex flex-col items-center md:flex-row md:items-end gap-2 mt-3">
+            {/* 開始時価格 */}
             <div className="flex">
               <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center mr-2">
                 <Bitcoin className="w-5 h-5 stroke-2.5 text-white" />
               </div>
               <div className="text-xl">${gameRound.base_price}</div>
             </div>
-            <div>{"->"}</div>
-            <div className="text-4xl font-bold">${gameRound.result_price}</div>
+            {/* 矢印 */}
+            <div className="inline-block transform md:-rotate-90 opacity-30">
+              ▼
+            </div>
 
-            <div
-              className={`absolute top-0 right-0 translate-x-15 -translate-y-1
-              rounded text-sm px-1 py-0.5 font-bold
-              ${BADGE_COLORS[gameRound.winning_choice!]}`}
-            >
-              {priceChange.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-                signDisplay: "always",
-              })}
-              %
+            <div>
+              {/* 結果価格 */}
+              <div className="relative text-4xl font-bold">
+                ${gameRound.result_price}
+                {/* 変化率バッジ */}
+                <div
+                  className={`absolute top-0 -right-15
+                  rounded text-sm px-1 py-0.5 font-bold
+                  ${BADGE_COLORS[gameRound.winning_choice!]}`}
+                >
+                  {priceChange.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                    signDisplay: "always",
+                  })}
+                  %
+                </div>
+              </div>
             </div>
           </div>
-
           <div className="mt-1 opacity-50">1/1 4:00 {"->"} 1/1 8:00 </div>
         </div>
 
-        <TradingViewWidget />
+        <div className="h-80 max-w-4xl mx-auto">
+          <BtcLineChart
+            chartRawData={gameRound.chart_data}
+            trend={gameRound.winning_choice}
+          />
+        </div>
       </div>
-
-      <ParticipantList
-        participants={participants}
-        winningChoice={gameRound.winning_choice}
-      />
     </div>
   );
 };

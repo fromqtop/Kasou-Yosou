@@ -31,7 +31,13 @@ export interface GameRoundRaw {
   result_price: number | null;
   winning_choice: Choice | null;
   predictions: Prediction[];
+  chart_data: ChartRawData;
 }
+
+export type ChartRawData = {
+  before: [number, number][];
+  after: [number, number][];
+};
 
 export interface GameRound {
   id: number;
@@ -42,6 +48,7 @@ export interface GameRound {
   result_price: number | null;
   winning_choice: Choice | null;
   predictions: Prediction[];
+  chart_data: ChartRawData;
 }
 
 export interface PredictionCreateResponse {
