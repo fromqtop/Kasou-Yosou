@@ -124,7 +124,7 @@ def create_game_round(db: Session = Depends(get_db)):
     # DB追加
     new_round = models.GameRound(
         start_at=start_at,
-        closed_at=start_at + timedelta(minutes=30),
+        closed_at=start_at + timedelta(hours=1),
         target_at=start_at + timedelta(hours=4),
         base_price=base_price,
         chart_data=chart_data,
